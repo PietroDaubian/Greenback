@@ -16,6 +16,7 @@
   window.GB_ON=!!(c.apiKey&&c.apiKey.indexOf("COLE")<0&&c.projectId&&c.projectId.indexOf("COLE")<0);
   try{window.GB_UID=localStorage.getItem("gb-uid")||""}catch(e){window.GB_UID=""}
   if(window.GB_ON&&!window.GB_UID)document.documentElement.classList.add("needauth");
+  try{if(window.GB_UID&&localStorage.getItem("gb-lock-"+window.GB_UID))document.documentElement.classList.add("locked")}catch(e){}
   var o=Storage.prototype.setItem;
   Storage.prototype.setItem=function(k,v){
     o.call(this,k,v);
@@ -142,9 +143,30 @@ html.needauth #authov{display:grid}
 .sheet .row .add{width:auto;margin-top:0}
 .sheet .theme{display:flex;width:max-content}
 .danger{background:var(--out)!important;color:#fff!important}
+#lockov{display:none;position:fixed;inset:0;z-index:200;background:var(--bg);place-items:center;padding:20px;overflow:auto}
+html.locked #lockov{display:grid}
+.pg[hidden]{display:none}
+.menu{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;margin-top:18px}
+.mi{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;padding:14px 16px;border:0;border-top:1px solid var(--line);background:none;color:var(--ink);font:inherit;text-align:left;cursor:pointer}
+.mi:first-child{border-top:0}
+.mi b{display:block;font-weight:600}
+.mi small{color:var(--mute);font-size:.82rem}
+.mi i{font-style:normal;color:var(--mute);font-size:1.4rem}
+.mi:hover{background:var(--bg)}
+html:not(.loggedin) .cloud{display:none!important}
 </style>
 </head>
 <body>
+<div id="lockov" role="dialog" aria-modal="true" aria-label="App bloqueado">
+  <div class="auth" style="text-align:center">
+    <img src="icon.svg" width="56" height="56" alt="">
+    <h2>Greenback bloqueado</h2>
+    <p class="empty" style="margin:0 0 14px">Use a biometria ou o código do aparelho para abrir.</p>
+    <button type="button" class="add" id="unlock">Desbloquear</button>
+    <button type="button" class="lnk" id="lockout">Não consigo desbloquear (sair e usar a senha)</button>
+    <p class="empty" id="lkmsg" role="status" style="margin:8px 0 0"></p>
+  </div>
+</div>
 <div id="authov" role="dialog" aria-modal="true" aria-label="Entrar">
   <div class="auth">
     <img src="icon.svg" width="56" height="56" alt="">
@@ -160,24 +182,40 @@ html.needauth #authov{display:grid}
   </div>
 </div>
 <div id="acctov" hidden>
-<div class="sheet" role="dialog" aria-modal="true" aria-label="Minha conta">
-  <div class="sh-top"><h2 style="margin:0">Minha conta</h2><button type="button" class="pay" id="acx" aria-label="Fechar">✕</button></div>
-  <div class="prof"><span class="avc big" id="avl2">?</span><div><b id="pname" style="font-size:1.15rem"></b><div class="empty" style="padding:0;word-break:break-all"><span id="acct"></span></div></div></div>
-  <p class="empty" id="cloudoff" hidden>As contas online ainda não foram configuradas. Os dados ficam só neste aparelho.</p>
+<div class="sheet" role="dialog" aria-modal="true" aria-label="Configurações">
+  <div class="sh-top"><button type="button" class="pay" id="acb" aria-label="Voltar" hidden>‹ Voltar</button><h2 id="sttl" style="margin:0;flex:1">Configurações</h2><button type="button" class="pay" id="acx" aria-label="Fechar">✕</button></div>
+  <div id="acctbox" hidden></div>
 
-  <h3>Aparência</h3>
-  <div class="theme" role="group" aria-label="Tema"><button id="th-auto" type="button">Auto</button><button id="th-light" type="button">Claro</button><button id="th-dark" type="button">Escuro</button></div>
+  <div class="pg" id="pg-main">
+    <div class="prof"><span class="avc big" id="avl2">?</span><div><b id="pname" style="font-size:1.15rem"></b><div class="empty" style="padding:0;word-break:break-all"><span id="acct"></span></div></div></div>
+    <p class="empty" id="cloudoff" hidden>As contas online ainda não foram configuradas. Os dados ficam só neste aparelho.</p>
+    <div class="menu">
+      <button type="button" class="mi cloud" data-go="conta"><span><b>Conta</b><small>Nome de usuário, e-mail, sair e excluir conta</small></span><i>›</i></button>
+      <button type="button" class="mi cloud" data-go="seg"><span><b>Segurança</b><small>Senha e bloqueio com biometria</small></span><i>›</i></button>
+      <button type="button" class="mi" data-go="apar"><span><b>Aparência</b><small>Tema claro, escuro ou automático</small></span><i>›</i></button>
+      <button type="button" class="mi" data-go="bkp"><span><b>Backup</b><small>Fazer e restaurar backup</small></span><i>›</i></button>
+    </div>
+  </div>
 
-  <div id="acctbox" hidden>
+  <div class="pg" id="pg-conta" hidden>
     <h3>Nome de usuário</h3>
     <div class="row"><input id="nn" maxlength="30" aria-label="Nome de usuário" placeholder="Como quer ser chamado"><button type="button" class="add" id="nsave">Salvar</button></div>
-
     <div id="mailbox">
       <h3>E-mail</h3>
       <label for="nm">Novo e-mail</label><input id="nm" type="email" autocomplete="email">
       <label for="nmp">Senha atual</label><input id="nmp" type="password" autocomplete="current-password">
       <button type="button" class="add" id="msave">Alterar e-mail</button>
     </div>
+    <h3>Sessão</h3>
+    <button type="button" class="add" id="logout">Sair da conta</button>
+    <h3>Excluir conta</h3>
+    <p class="empty" style="margin:0 0 8px">Apaga sua conta e todos os seus dados online. Não dá para desfazer.</p>
+    <label for="dtxt">Digite EXCLUIR para confirmar</label><input id="dtxt" autocomplete="off">
+    <div id="dpwbox"><label for="dpw">Senha atual</label><input id="dpw" type="password" autocomplete="current-password"></div>
+    <button type="button" class="add danger" id="dsave">Excluir minha conta</button>
+  </div>
+
+  <div class="pg" id="pg-seg" hidden>
     <div id="passbox">
       <h3>Senha</h3>
       <label for="opw">Senha atual</label><input id="opw" type="password" autocomplete="current-password">
@@ -185,20 +223,30 @@ html.needauth #authov{display:grid}
       <button type="button" class="add" id="psave">Alterar senha</button>
     </div>
     <p class="empty" id="gnote" hidden>Você entra com a conta Google. E-mail e senha são gerenciados por ela.</p>
-
-    <h3>Dados</h3>
-    <p class="empty" style="margin:0 0 8px">Sincronização: <b id="syncst"></b></p>
-    <button type="button" class="add" id="gobackup" style="background:var(--card);color:var(--ink);border:1px solid var(--line)">Backup e importação</button>
-
-    <h3>Sessão</h3>
-    <button type="button" class="add" id="logout">Sair da conta</button>
-
-    <h3>Excluir conta</h3>
-    <p class="empty" style="margin:0 0 8px">Apaga sua conta e todos os seus dados online. Não dá para desfazer.</p>
-    <label for="dtxt">Digite EXCLUIR para confirmar</label><input id="dtxt" autocomplete="off">
-    <div id="dpwbox"><label for="dpw">Senha atual</label><input id="dpw" type="password" autocomplete="current-password"></div>
-    <button type="button" class="add danger" id="dsave">Excluir minha conta</button>
+    <h3>Bloqueio com biometria</h3>
+    <p class="empty" style="margin:0 0 8px">Pede Face ID, digital ou o código do aparelho para abrir o app neste aparelho. É um bloqueio de tela: não substitui a senha da conta.</p>
+    <p style="margin:0">Estado: <b id="biost">Desativado</b></p>
+    <button type="button" class="add" id="bioon">Ativar bloqueio</button>
+    <button type="button" class="add" id="biooff" hidden>Desativar bloqueio</button>
   </div>
+
+  <div class="pg" id="pg-apar" hidden>
+    <h3>Tema</h3>
+    <div class="theme" role="group" aria-label="Tema"><button id="th-auto" type="button">Auto</button><button id="th-light" type="button">Claro</button><button id="th-dark" type="button">Escuro</button></div>
+  </div>
+
+  <div class="pg" id="pg-bkp" hidden>
+    <h3>Fazer backup</h3>
+    <p class="empty" style="margin:0">Gera um arquivo com seus lançamentos, categorias e contas agendadas, para guardar como cópia de segurança.</p>
+    <button type="button" class="add" id="exp">Fazer backup</button>
+    <h3>Restaurar backup</h3>
+    <p class="empty" style="margin:0">Escolha um arquivo de backup do Greenback. Os dados do arquivo são somados ao que já existe, sem apagar nada.</p>
+    <button type="button" class="add" id="imp" style="background:var(--card);color:var(--ink);border:1px solid var(--line)">Restaurar backup</button>
+    <input id="impf" type="file" accept=".json,application/json" hidden>
+    <p class="empty cloud" style="margin:14px 0 0">Sincronização online: <b id="syncst"></b></p>
+    <p class="empty" id="bk" role="status" style="margin:10px 0 0"></p>
+  </div>
+
   <p class="empty" id="pmsg" role="status" style="margin-top:14px"></p>
 </div>
 </div>
@@ -206,7 +254,7 @@ html.needauth #authov{display:grid}
 <header>
   <div class="brand"><svg class='logo' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512' aria-hidden='true'><defs><linearGradient id='lg-bg' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='#183B59'/><stop offset='1' stop-color='#10283E'/></linearGradient></defs><rect x='20' y='20' width='472' height='472' rx='112' fill='url(#lg-bg)'/><path d='M145 105h163l62 62v216a24 24 0 0 1-24 24H145a24 24 0 0 1-24-24V129a24 24 0 0 1 24-24Z' fill='#F8FBFC'/><path d='M308 105v47a15 15 0 0 0 15 15h47' fill='#DCE9EE' stroke='#C8D8E0' stroke-width='8' stroke-linejoin='round'/><rect x='158' y='194' width='107' height='13' rx='6.5' fill='#C6D5DC'/><rect x='158' y='224' width='73' height='13' rx='6.5' fill='#C6D5DC'/><circle cx='222' cy='310' r='53' fill='#D8F5EF'/><path d='M231 282c-5-6-12-9-21-8-12 1-20 9-20 19 0 11 8 16 23 20 15 4 22 9 22 20 0 12-10 20-24 20-11 0-21-5-28-14' fill='none' stroke='#168B79' stroke-width='10' stroke-linecap='round'/><path d='M222 264v92' stroke='#168B79' stroke-width='9' stroke-linecap='round'/><g transform='translate(286 302)'><rect width='118' height='100' rx='24' fill='#FFB34D'/><path d='M25 73V57h16v16M52 73V41h16v32M79 73V25h16v48' fill='none' stroke='#173B56' stroke-width='10' stroke-linecap='round' stroke-linejoin='round'/></g></svg><h1>Greenback</h1></div>
   <button type="button" class="avatar" id="avbtn" aria-label="Abrir minha conta"><span class="avc" id="avl">?</span><span class="avn" id="avn">Conta</span></button>
-  <nav aria-label="Seções"><a href="#resumo">Resumo</a><a href="#lanc">Lançar</a><a href="#cartao">Cartão</a><a href="#cl">Calendário</a><a href="#hist">Histórico</a><a href="#backup">Backup</a></nav>
+  <nav aria-label="Seções"><a href="#resumo">Resumo</a><a href="#lanc">Lançar</a><a href="#cartao">Cartão</a><a href="#cl">Calendário</a><a href="#hist">Histórico</a></nav>
   <div class="month"><button id="prev" aria-label="Mês anterior">‹</button><span id="mlabel"></span><button id="next" aria-label="Próximo mês">›</button></div>
 </header>
 
@@ -267,17 +315,6 @@ html.needauth #authov{display:grid}
 <section class="card" style="margin-top:14px">
   <h2 id="hist">Movimentações do mês</h2>
   <ul id="list"></ul>
-</section>
-<section class="card" style="margin-top:14px">
-  <h2 id="backup">Backup</h2>
-  
-  <p class="empty" style="margin:0 0 12px">Exporte um arquivo de backup de vez em quando, como cópia de segurança. Importar soma os dados do arquivo ao que já existe, sem apagar nada.</p>
-  <div style="display:flex;gap:10px;flex-wrap:wrap">
-    <button type="button" class="add" id="exp">Exportar meus dados</button>
-    <button type="button" class="add" id="imp" style="background:var(--card);color:var(--ink);border:1px solid var(--line)">Importar arquivo</button>
-    <input id="impf" type="file" accept=".json,application/json" hidden>
-  </div>
-  <p class="empty" id="bk" role="status" style="margin:10px 0 0"></p>
 </section>
 </main>
 
@@ -435,12 +472,43 @@ setTheme(th,true);
 window.GBuser=function(name){var n=name||'Visitante',ini=(n.trim().charAt(0)||'?').toUpperCase();['avl','avl2'].forEach(function(i){$(i).textContent=ini});$('avn').textContent=n;$('pname').textContent=n};
 GBuser(window.GB_ON?'Visitante':'Meu perfil');
 if(!window.GB_ON)$('cloudoff').hidden=false;
-function openAcct(){$('pmsg').textContent='';$('acctov').hidden=false;document.body.style.overflow='hidden';$('acx').focus()}
+function openAcct(){go('main');$('acctov').hidden=false;document.body.style.overflow='hidden';$('acx').focus()}
 function closeAcct(){$('acctov').hidden=true;document.body.style.overflow='';$('avbtn').focus()}
 $('avbtn').onclick=openAcct;$('acx').onclick=closeAcct;
 $('acctov').onclick=function(e){if(e.target===this)closeAcct()};
 document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!$('acctov').hidden)closeAcct()});
-$('gobackup').onclick=function(){closeAcct();location.hash='backup'};
+var TT={main:'Configurações',conta:'Conta',seg:'Segurança',apar:'Aparência',bkp:'Backup'};
+function go(n){['main','conta','seg','apar','bkp'].forEach(function(k){$('pg-'+k).hidden=k!==n});$('sttl').textContent=TT[n];$('acb').hidden=n==='main';$('pmsg').textContent='';$('bk').textContent='';$('acctov').querySelector('.sheet').scrollTop=0;if(n==='seg')bioUi()}
+Array.prototype.forEach.call(document.querySelectorAll('.mi'),function(b){b.onclick=function(){go(b.getAttribute('data-go'))}});
+$('acb').onclick=function(){go('main')};
+function b64(buf){return btoa(String.fromCharCode.apply(null,new Uint8Array(buf)))}
+function unb64(t){var b=atob(t),a=new Uint8Array(b.length);for(var i=0;i<b.length;i++)a[i]=b.charCodeAt(i);return a}
+function lockKey(){var u=localStorage.getItem('gb-uid');return u?'gb-lock-'+u:null}
+function bioUi(){var k=lockKey(),on=!!(k&&localStorage.getItem(k));$('biost').textContent=on?'Ativado':'Desativado';$('bioon').hidden=on;$('biooff').hidden=!on}
+$('bioon').onclick=async function(){
+  var k=lockKey();if(!k)return;
+  try{
+    if(!(window.PublicKeyCredential&&navigator.credentials&&await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable())){$('pmsg').textContent='Este aparelho ou navegador não oferece biometria para sites.';return}
+    var c=await navigator.credentials.create({publicKey:{challenge:crypto.getRandomValues(new Uint8Array(32)),rp:{name:'Greenback'},user:{id:crypto.getRandomValues(new Uint8Array(16)),name:$('acct').textContent||'usuario',displayName:$('pname').textContent||'Usuário'},pubKeyCredParams:[{type:'public-key',alg:-7},{type:'public-key',alg:-257}],authenticatorSelection:{authenticatorAttachment:'platform',userVerification:'required'},timeout:60000,attestation:'none'}});
+    localStorage.setItem(k,b64(c.rawId));bioUi();$('pmsg').textContent='Bloqueio ativado. O app vai pedir a biometria ao abrir.';
+  }catch(e){$('pmsg').textContent='Não foi possível ativar o bloqueio.'}
+};
+$('biooff').onclick=function(){var k=lockKey();if(k)localStorage.removeItem(k);bioUi();$('pmsg').textContent='Bloqueio desativado.'};
+$('unlock').onclick=async function(){
+  var k=lockKey(),id=k&&localStorage.getItem(k);
+  if(!id){document.documentElement.classList.remove('locked');return}
+  try{
+    await navigator.credentials.get({publicKey:{challenge:crypto.getRandomValues(new Uint8Array(32)),allowCredentials:[{type:'public-key',id:unb64(id),transports:['internal']}],userVerification:'required',timeout:60000}});
+    document.documentElement.classList.remove('locked');$('lkmsg').textContent='';
+  }catch(e){$('lkmsg').textContent='Não foi possível desbloquear. Tente de novo.'}
+};
+$('lockout').onclick=function(){$('lkmsg').textContent='Saindo da conta...';$('logout').click()};
+var hidAt=0;
+document.addEventListener('visibilitychange',function(){
+  if(document.hidden){hidAt=Date.now();return}
+  var k=lockKey();
+  if(k&&localStorage.getItem(k)&&hidAt&&Date.now()-hidAt>30000)document.documentElement.classList.add('locked');
+});
 function bkMsg(t){$('bk').textContent=t}
 function snapshot(){return {app:'greenback',versao:1,exportadoEm:new Date().toISOString(),tx:tx,cats:CUS,cfg:CFG,bills:BILLS}}
 $('exp').onclick=function(){
@@ -544,7 +612,7 @@ if("serviceWorker" in navigator){window.addEventListener("load",function(){navig
       refresh();
     }
     html.classList.remove("needauth");
-    q("acctbox").hidden=false;
+    q("acctbox").hidden=false;html.classList.add("loggedin");
     q("acct").textContent=u.email||"Google";
     GBuser(u.displayName||(u.email||"Conta").split("@")[0]);
     q("nn").value=u.displayName||"";
@@ -633,7 +701,7 @@ if("serviceWorker" in navigator){window.addEventListener("load",function(){navig
   window.addEventListener("online",pull);
   A.onAuthStateChanged(auth,function(u){
     if(u)enter(u);
-    else{user=null;q("acctbox").hidden=true;GBuser("Visitante");closeAcct();html.classList.add("needauth")}
+    else{user=null;q("acctbox").hidden=true;html.classList.remove("loggedin","locked");GBuser("Visitante");closeAcct();html.classList.add("needauth")}
   });
 })();
 </script>
