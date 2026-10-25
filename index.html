@@ -9,6 +9,25 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Greenback">
+<script src="firebase-config.js"></script>
+<script>
+(function(){
+  var c=window.FIREBASE_CONFIG||{};
+  window.GB_ON=!!(c.apiKey&&c.apiKey.indexOf("COLE")<0&&c.projectId&&c.projectId.indexOf("COLE")<0);
+  try{window.GB_UID=localStorage.getItem("gb-uid")||""}catch(e){window.GB_UID=""}
+  if(window.GB_ON&&!window.GB_UID)document.documentElement.classList.add("needauth");
+  var o=Storage.prototype.setItem;
+  Storage.prototype.setItem=function(k,v){
+    o.call(this,k,v);
+    try{
+      if(this===localStorage&&window.GB_ON&&window.KEY&&String(k).indexOf(window.KEY)===0&&!/-(theme|ts)$/.test(k)){
+        o.call(this,window.KEY+"-ts",String(Date.now()));
+        if(window.GBlocal)window.GBlocal();
+      }
+    }catch(e){}
+  };
+})();
+</script>
 <title>Greenback – Controle financeiro</title>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
@@ -97,9 +116,32 @@ input:focus,select:focus{border-color:var(--in);box-shadow:0 0 0 3px color-mix(i
 .seg button{border-radius:9px;font-weight:600;transition:background .2s}
 .add{border-radius:10px;transition:transform .15s,opacity .15s}
 .add:hover{transform:translateY(-1px);opacity:.92}
+#acctbox[hidden]{display:none}
+#authov{display:none;position:fixed;inset:0;z-index:100;background:var(--bg);place-items:center;padding:20px;overflow:auto}
+html.needauth #authov{display:grid}
+.auth{width:100%;max-width:380px;background:var(--card);border-radius:20px;padding:26px;box-shadow:0 18px 40px -20px rgba(18,38,43,.4)}
+.auth h2{font-size:1.3rem;margin:10px 0 6px}
+.auth input{margin-bottom:10px}
+.auth .add{width:100%;margin-bottom:8px}
+.auth .alt{background:var(--bg);color:var(--ink);border:1px solid var(--line)}
+.lnk{background:none;border:0;color:var(--mute);font:inherit;font-size:.9rem;text-decoration:underline;cursor:pointer;padding:6px 0}
 </style>
 </head>
 <body>
+<div id="authov" role="dialog" aria-modal="true" aria-label="Entrar">
+  <div class="auth">
+    <img src="icon.svg" width="56" height="56" alt="">
+    <h2>Entrar no Greenback</h2>
+    <p class="empty" style="margin:0 0 14px">Entre com sua conta para ver seus dados em qualquer celular.</p>
+    <input id="aemail" type="email" autocomplete="email" placeholder="E-mail" aria-label="E-mail">
+    <input id="apass" type="password" autocomplete="current-password" placeholder="Senha (mínimo 6 caracteres)" aria-label="Senha">
+    <button type="button" class="add" id="ain">Entrar</button>
+    <button type="button" class="add alt" id="aup">Criar conta</button>
+    <button type="button" class="add alt" id="agoogle">Continuar com Google</button>
+    <button type="button" class="lnk" id="areset">Esqueci minha senha</button>
+    <p class="empty" id="amsg" role="status" style="margin:8px 0 0"></p>
+  </div>
+</div>
 <main>
 <header>
   <div class="brand"><svg class='logo' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512' aria-hidden='true'><defs><linearGradient id='lg-bg' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='#183B59'/><stop offset='1' stop-color='#10283E'/></linearGradient></defs><rect x='20' y='20' width='472' height='472' rx='112' fill='url(#lg-bg)'/><path d='M145 105h163l62 62v216a24 24 0 0 1-24 24H145a24 24 0 0 1-24-24V129a24 24 0 0 1 24-24Z' fill='#F8FBFC'/><path d='M308 105v47a15 15 0 0 0 15 15h47' fill='#DCE9EE' stroke='#C8D8E0' stroke-width='8' stroke-linejoin='round'/><rect x='158' y='194' width='107' height='13' rx='6.5' fill='#C6D5DC'/><rect x='158' y='224' width='73' height='13' rx='6.5' fill='#C6D5DC'/><circle cx='222' cy='310' r='53' fill='#D8F5EF'/><path d='M231 282c-5-6-12-9-21-8-12 1-20 9-20 19 0 11 8 16 23 20 15 4 22 9 22 20 0 12-10 20-24 20-11 0-21-5-28-14' fill='none' stroke='#168B79' stroke-width='10' stroke-linecap='round'/><path d='M222 264v92' stroke='#168B79' stroke-width='9' stroke-linecap='round'/><g transform='translate(286 302)'><rect width='118' height='100' rx='24' fill='#FFB34D'/><path d='M25 73V57h16v16M52 73V41h16v32M79 73V25h16v48' fill='none' stroke='#173B56' stroke-width='10' stroke-linecap='round' stroke-linejoin='round'/></g></svg><h1>Greenback</h1></div>
@@ -167,8 +209,9 @@ input:focus,select:focus{border-color:var(--in);box-shadow:0 0 0 3px color-mix(i
   <ul id="list"></ul>
 </section>
 <section class="card" style="margin-top:14px">
-  <h2 id="backup">Backup e troca de celular</h2>
-  <p class="empty" style="margin:0 0 12px">Seus dados ficam só neste aparelho. Para levar para outro celular, exporte o arquivo aqui e importe no novo aparelho. Importar soma os dados ao que já existe, sem apagar nada.</p>
+  <h2 id="backup">Conta e backup</h2>
+  <div id="acctbox" hidden style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 12px"><span>Conta: <b id="acct"></b></span><span class="empty" id="syncst" style="padding:0"></span><button type="button" class="pay" id="logout">Sair</button></div>
+  <p class="empty" style="margin:0 0 12px">Exporte um arquivo de backup de vez em quando, como cópia de segurança. Importar soma os dados do arquivo ao que já existe, sem apagar nada.</p>
   <div style="display:flex;gap:10px;flex-wrap:wrap">
     <button type="button" class="add" id="exp">Exportar meus dados</button>
     <button type="button" class="add" id="imp" style="background:var(--card);color:var(--ink);border:1px solid var(--line)">Importar arquivo</button>
@@ -181,7 +224,7 @@ input:focus,select:focus{border-color:var(--in);box-shadow:0 0 0 3px color-mix(i
 <script>
 var CATS_OUT=["Moradia","Mercado","Delivery","Restaurantes","Transporte","Combustível","Academia","Futebol","Esportes","Saúde","Farmácia","Lazer","Viagens","Assinaturas","Educação","Roupas","Beleza","Pets","Presentes","Contas (luz, água, internet)","Cartão de crédito","Impostos","Outros"];
 var CATS_IN=["Salário","Freelance","Vendas","Aluguel recebido","Investimentos","Dividendos","Reembolso","Presente","Bônus","13º salário","Restituição de imposto","Outros"];
-var KEY="bolso-v1", tipo="out", tx=[], cur=new Date();
+var KEY=window.GB_UID?"gb-"+window.GB_UID:"bolso-v1", tipo="out", tx=[], cur=new Date();
 cur.setDate(1);
 try{var s=localStorage.getItem(KEY);if(s)tx=JSON.parse(s)||[]}catch(e){}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(tx))}catch(e){}}
@@ -369,6 +412,118 @@ fillCats();render();renderInv();renderCal();
 </script>
 <script>
 if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){})})}
+</script>
+<script type="module">
+(async function(){
+  if(!window.GB_ON)return;
+  var q=function(i){return document.getElementById(i)};
+  var B="https://www.gstatic.com/firebasejs/10.14.1/",N,A,F;
+  try{
+    var m=await Promise.all([import(B+"firebase-app.js"),import(B+"firebase-auth.js"),import(B+"firebase-firestore.js")]);
+    N=m[0];A=m[1];F=m[2];
+  }catch(e){return}
+  var app=N.initializeApp(window.FIREBASE_CONFIG),auth=A.getAuth(app),db=F.getFirestore(app);
+  var user=null,quiet=false,timer=null,html=document.documentElement;
+  function st(t){q("syncst").textContent=t}
+  function snap(){return {tx:window.tx,cats:window.CUS,cfg:window.CFG,bills:window.BILLS}}
+  function ts(){return +localStorage.getItem(window.KEY+"-ts")||0}
+  function refresh(){fillCats();render();renderInv();renderCal();q("fech").value=window.CFG.f||"";q("venc").value=window.CFG.v||""}
+  function blank(){window.tx=[];window.CUS={out:[],in:[]};window.CFG={f:0,v:0};window.BILLS=[]}
+  function persist(){save();saveX();try{localStorage.setItem(window.KEY+"-cats",JSON.stringify(window.CUS))}catch(e){}}
+  function apply(d,t){
+    quiet=true;
+    window.tx=d.tx||[];
+    window.CUS=(d.cats&&d.cats.out&&d.cats.in)?d.cats:{out:[],in:[]};
+    window.CFG=d.cfg||{f:0,v:0};
+    window.BILLS=d.bills||[];
+    persist();
+    localStorage.setItem(window.KEY+"-ts",String(t));
+    refresh();
+    quiet=false;
+  }
+  async function push(){
+    if(!user)return;
+    try{
+      await F.setDoc(F.doc(db,"users",user.uid),{data:JSON.stringify(snap()),updatedAt:ts()});
+      st("Sincronizado");
+    }catch(e){st("Sem conexão. Vai sincronizar quando voltar.")}
+  }
+  async function pull(){
+    if(!user)return;
+    try{
+      var s=await F.getDoc(F.doc(db,"users",user.uid)),t=ts();
+      if(s.exists()){
+        var c=s.data(),ct=c.updatedAt||0;
+        if(ct>t){apply(JSON.parse(c.data),ct);st("Sincronizado")}
+        else if(t>ct)await push();
+        else st("Sincronizado");
+      }else{
+        if(!t&&(window.tx.length||window.BILLS.length))localStorage.setItem(window.KEY+"-ts",String(Date.now()));
+        await push();
+      }
+    }catch(e){st("Sem conexão. Usando os dados salvos neste aparelho.")}
+  }
+  function enter(u){
+    user=u;
+    var prev=localStorage.getItem("gb-uid")||"";
+    if(prev!==u.uid){
+      if(prev)blank();
+      window.KEY="gb-"+u.uid;
+      quiet=true;persist();quiet=false;
+      localStorage.setItem(window.KEY+"-ts","0");
+      localStorage.setItem("gb-uid",u.uid);
+      refresh();
+    }
+    html.classList.remove("needauth");
+    q("acctbox").hidden=false;
+    q("acct").textContent=u.email||"Google";
+    pull();
+  }
+  window.GBlocal=function(){
+    if(!user||quiet)return;
+    clearTimeout(timer);st("Salvando...");
+    timer=setTimeout(push,1200);
+  };
+  function msg(t){q("amsg").textContent=t}
+  function why(e){
+    var c=(e&&e.code)||"";
+    if(/invalid-credential|wrong-password|user-not-found|invalid-login/.test(c))return "E-mail ou senha incorretos.";
+    if(c==="auth/email-already-in-use")return "Este e-mail já tem conta. Use Entrar.";
+    if(c==="auth/weak-password")return "Use uma senha com pelo menos 6 caracteres.";
+    if(c==="auth/invalid-email")return "E-mail inválido.";
+    if(c==="auth/network-request-failed")return "Sem conexão com a internet.";
+    if(c==="auth/unauthorized-domain")return "Este endereço ainda não foi autorizado no Firebase.";
+    if(c==="auth/popup-closed-by-user"||c==="auth/cancelled-popup-request")return "";
+    return "Não foi possível concluir. Tente novamente.";
+  }
+  function creds(){
+    var e=q("aemail").value.trim(),p=q("apass").value;
+    if(!e||!p){msg("Preencha e-mail e senha.");return null}
+    return [e,p];
+  }
+  q("ain").onclick=async function(){var c=creds();if(!c)return;msg("Entrando...");try{await A.signInWithEmailAndPassword(auth,c[0],c[1]);msg("")}catch(e){msg(why(e))}};
+  q("aup").onclick=async function(){var c=creds();if(!c)return;msg("Criando conta...");try{await A.createUserWithEmailAndPassword(auth,c[0],c[1]);msg("")}catch(e){msg(why(e))}};
+  q("agoogle").onclick=async function(){msg("");try{await A.signInWithPopup(auth,new A.GoogleAuthProvider())}catch(e){msg(why(e))}};
+  q("areset").onclick=async function(){
+    var e=q("aemail").value.trim();
+    if(!e){msg("Digite seu e-mail e toque aqui de novo.");return}
+    try{await A.sendPasswordResetEmail(auth,e);msg("Se o e-mail tiver conta, enviamos um link para redefinir a senha.")}catch(x){msg(why(x))}
+  };
+  q("apass").onkeydown=function(e){if(e.key==="Enter")q("ain").click()};
+  q("logout").onclick=async function(){
+    await push();
+    try{await A.signOut(auth)}catch(e){}
+    localStorage.removeItem("gb-uid");
+    blank();refresh();
+    q("aemail").value="";q("apass").value="";
+  };
+  document.addEventListener("visibilitychange",function(){if(!document.hidden)pull()});
+  window.addEventListener("online",pull);
+  A.onAuthStateChanged(auth,function(u){
+    if(u)enter(u);
+    else{user=null;q("acctbox").hidden=true;html.classList.add("needauth")}
+  });
+})();
 </script>
 </body>
 </html>
