@@ -185,6 +185,34 @@ input[type=date]::-webkit-date-and-time-value{text-align:left;min-height:1.2em;m
 .lg{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:12px;font:inherit;font-weight:600;cursor:pointer}
 .lg.on{border-color:var(--in)}
 .lg.on::after{content:"✓";color:var(--in);font-weight:800}
+.card[data-tab="charts"],.card[data-tab="econ"]{margin-bottom:14px}
+.alt{background:var(--bg)!important;color:var(--ink)!important;border:1px solid var(--line)!important}
+.lgd{display:flex;gap:14px;flex-wrap:wrap;margin-top:6px;font-size:.82rem;color:var(--mute)}
+.lgd i,.lr i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px}
+.lr{display:flex;justify-content:space-between;gap:10px;padding:5px 0;font-size:.92rem}
+.dn{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.dn svg{width:120px;height:120px;flex:none}
+.dn>div{flex:1;min-width:150px}
+.fxs{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:end;margin-top:8px}
+.fxs .pay{height:46px;width:46px;font-size:1.1rem}
+.fxres{margin:14px 0 4px}
+.fxres b{display:block;font-size:1.6rem;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.fxres small{color:var(--mute)}
+.ind{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ind>div{background:var(--bg);border-radius:12px;padding:12px}
+.ind small{display:block;color:var(--mute);font-size:.78rem}
+.ind b{display:block;font-size:1.25rem;margin:2px 0;font-variant-numeric:tabular-nums}
+.sim{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sim .full{grid-column:1/-1}
+.rr{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:9px 0;border-top:1px solid var(--line)}
+.rr:first-child{border-top:0}
+.rr small{display:block;color:var(--mute);font-size:.78rem}
+.rr b{font-variant-numeric:tabular-nums;white-space:nowrap}
+.rr.big b{font-size:1.15rem;color:var(--in)}
+.card dl{margin:0}
+.card dt{font-weight:600;margin-top:10px}
+.card dd{margin:2px 0 0;color:var(--mute);font-size:.92rem}
+.sub{font-size:.8rem;text-transform:uppercase;letter-spacing:.06em;color:var(--mute);margin:18px 0 6px;font-weight:600}
 </style>
 </head>
 <body>
@@ -352,11 +380,82 @@ input[type=date]::-webkit-date-and-time-value{text-align:left;min-height:1.2em;m
   <h2 id="hist">Movimentações do mês</h2>
   <ul id="list"></ul>
 </section>
+<section class="card" data-tab="charts" hidden><h2>Receitas e despesas</h2><p class="empty" style="margin:-6px 0 8px;font-size:.88rem">Últimos 6 meses</p><div id="ch-bars"></div></section>
+<section class="card" data-tab="charts" hidden><h2>Despesas por categoria</h2><div id="ch-donut"></div></section>
+<section class="card" data-tab="charts" hidden>
+  <h2>Conversor de moedas</h2>
+  <label for="fxa">Valor</label><input id="fxa" type="number" inputmode="decimal" min="0" step="any" value="100">
+  <div class="fxs"><div><label for="fxf">De</label><select id="fxf"></select></div><button type="button" class="pay" id="fxsw" aria-label="Inverter moedas">⇄</button><div><label for="fxt">Para</label><select id="fxt"></select></div></div>
+  <div class="fxres"><b id="fxr"></b><small id="fxrate"></small></div>
+  <p class="empty" style="margin:6px 0 0"><span id="fxst"></span> <b id="fxts"></b></p>
+  <h3 class="sub">Variação em 30 dias (em reais)</h3><div id="fx-ch"></div>
+  <button type="button" class="add alt" id="fxrf">Atualizar cotações</button>
+  <p class="empty" style="margin:10px 0 0;font-size:.8rem">Cotações: AwesomeAPI. Valores de referência, podem diferir dos praticados por bancos e casas de câmbio.</p>
+</section>
+<section class="card" data-tab="econ" hidden>
+  <h2>Indicadores</h2><p class="empty" style="margin:-6px 0 10px;font-size:.88rem">Dados do Banco Central do Brasil</p>
+  <div class="ind" id="ind"></div>
+  <p class="empty" id="indst" style="margin:10px 0 0"></p>
+  <button type="button" class="add alt" id="indrf">Atualizar indicadores</button>
+</section>
+<section class="card" data-tab="econ" hidden><h2>Inflação (IPCA) mês a mês</h2><div id="ec-ipca"></div></section>
+<section class="card" data-tab="econ" hidden><h2>Meta Selic no último ano</h2><div id="ec-selic"></div></section>
+<section class="card" data-tab="econ" hidden>
+  <h2>Simulador de juros compostos</h2>
+  <div class="sim">
+    <div><label for="sv">Valor inicial (R$)</label><input id="sv" type="number" inputmode="decimal" min="0" step="any" value="1000"></div>
+    <div><label for="sa">Aporte mensal (R$)</label><input id="sa" type="number" inputmode="decimal" min="0" step="any" value="2000"></div>
+    <div><label for="sr">Taxa de juros (%)</label><input id="sr" type="number" inputmode="decimal" min="0" step="any" value="10"></div>
+    <div><label for="su">Período da taxa</label><select id="su"><option value="a">ao ano</option><option value="m">ao mês</option></select></div>
+    <div><label for="spc">Percentual da taxa (%)</label><input id="spc" type="number" inputmode="decimal" min="0" step="any" value="100"></div>
+    <div><label for="sir">Imposto de renda</label><select id="sir"><option value="r">Tabela regressiva (CDB, Tesouro)</option><option value="i">Isento (LCI, LCA, poupança)</option></select></div>
+    <div><label for="sn">Prazo</label><input id="sn" type="number" inputmode="numeric" min="1" step="1" value="10"></div>
+    <div><label for="sp">Unidade do prazo</label><select id="sp"><option value="a">anos</option><option value="m">meses</option></select></div>
+    <button type="button" class="add alt full" id="ssel" style="margin-top:0">Usar a Selic atual como taxa</button>
+    <p class="empty full" style="margin:-4px 0 0;font-size:.8rem">Percentual da taxa: 100 para 100% da Selic; 90 para 90% do CDI, por exemplo.</p>
+    <div><label for="sinf">Inflação esperada (% ao ano)</label><input id="sinf" type="number" inputmode="decimal" min="0" step="any"></div>
+    <div><label for="scn">Cenário da taxa</label><select id="scn"><option value="c">Taxa constante</option><option value="g">Queda gradual</option><option value="f">Queda forte</option><option value="p">Personalizado</option></select></div>
+    <label class="full" style="display:flex;align-items:center;gap:8px;margin:0"><input id="sgr" type="checkbox" style="width:auto">Reajustar o aporte todo ano pela inflação</label>
+    <div id="sqw" style="display:contents" hidden>
+      <div><label for="sq">Queda total (pontos percentuais)</label><input id="sq" type="number" inputmode="decimal" min="0" step="any" value="3"></div>
+      <div><label for="sd">Em quantos anos</label><input id="sd" type="number" inputmode="decimal" min="0.25" step="any" value="3"></div>
+    </div>
+  </div>
+  <div id="sres" style="margin-top:12px"></div>
+  <p class="empty" id="snote" style="margin:4px 0 8px;font-size:.8rem" hidden>O valor em poder de compra de hoje desconta a inflação esperada informada acima.</p>
+  <div id="s-ch"></div>
+  <h3 class="sub">Comparação de cenários da taxa</h3>
+  <div id="scmp"></div>
+  <p class="empty" style="margin:8px 0 0;font-size:.8rem">Hipóteses ilustrativas, não são previsões. O imposto de renda usa a tabela regressiva (22,5% a 15%) aplicada a cada aporte conforme o tempo de aplicação.</p>
+</section>
+<section class="card" data-tab="econ" hidden>
+  <h2>Quanto rende?</h2>
+  <div class="sim">
+    <div><label for="cmpv">Valor (R$)</label><input id="cmpv" type="number" inputmode="decimal" min="0" step="any" value="10000"></div>
+    <div><label for="cmpn">Prazo (meses)</label><input id="cmpn" type="number" inputmode="numeric" min="1" step="1" value="12"></div>
+    <div><label for="cmpc">CDI (% ao ano)</label><input id="cmpc" type="number" inputmode="decimal" step="any"></div>
+    <div><label for="cmps">Selic (% ao ano)</label><input id="cmps" type="number" inputmode="decimal" step="any"></div>
+  </div>
+  <div id="cres" style="margin-top:12px"></div>
+  <p class="empty" style="margin:8px 0 0;font-size:.8rem">As simulações são estimativas simples e não consideram TR, taxas de custódia ou mudanças futuras nas taxas. Não são recomendação de investimento.</p>
+</section>
+<section class="card" data-tab="econ" hidden>
+  <h2>Entenda os termos</h2>
+  <dl>
+    <dt>Selic</dt><dd>Taxa básica de juros da economia, definida pelo Copom do Banco Central. Influencia financiamentos, empréstimos e o rendimento da renda fixa.</dd>
+    <dt>CDI</dt><dd>Taxa que os bancos usam em empréstimos entre si, muito próxima da Selic. Serve de referência para CDBs, LCIs e LCAs.</dd>
+    <dt>IPCA</dt><dd>Índice oficial de inflação do Brasil, medido pelo IBGE. Mostra quanto os preços subiram no período.</dd>
+    <dt>Juro real</dt><dd>Juro descontada a inflação. Mostra quanto o dinheiro rende de verdade em poder de compra.</dd>
+    <dt>Juros compostos</dt><dd>Juros que incidem sobre o valor inicial mais os juros já acumulados: o famoso juros sobre juros.</dd>
+  </dl>
+</section>
 </main>
 <div class="tabbar" role="tablist" aria-label="Navegação">
   <button type="button" class="tb" data-t="home" role="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg><span>Início</span></button>
   <button type="button" class="tb" data-t="add" role="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg><span>Lançar</span></button>
-  <button type="button" class="tb" data-t="bills" role="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span>Cartão e contas</span></button>
+  <button type="button" class="tb" data-t="bills" role="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span>Contas</span></button>
+  <button type="button" class="tb" data-t="charts" role="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V11M10 20V4M16 20v-7M22 20H2"/></svg><span>Gráficos</span></button>
+  <button type="button" class="tb" data-t="econ" role="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg><span>Economia</span></button>
 </div>
 <div id="toast" role="status"></div>
 
@@ -537,7 +636,7 @@ function showTab(n){
   each.call(document.querySelectorAll('[data-tab]'),function(e){e.hidden=e.getAttribute('data-tab')!==n});
   each.call(document.querySelectorAll('.grid'),function(g){g.hidden=!Array.prototype.some.call(g.children,function(c){return !c.hidden})});
   each.call(document.querySelectorAll('.tb'),function(b){var on=b.getAttribute('data-t')===n;b.classList.toggle('on',on);b.setAttribute('aria-selected',on?'true':'false')});
-  document.querySelector('.month').hidden=n!=='home';
+  document.querySelector('.month').hidden=(n!=='home'&&n!=='charts');
   window.scrollTo(0,0);
 }
 Array.prototype.forEach.call(document.querySelectorAll('.tb'),function(b){b.onclick=function(){showTab(b.getAttribute('data-t'))}});
@@ -587,6 +686,38 @@ var DICT={
 "Moradia":"Housing","Mercado":"Groceries","Restaurantes":"Restaurants","Transporte":"Transport","Combustível":"Fuel","Academia":"Gym","Futebol":"Football","Esportes":"Sports","Saúde":"Health","Farmácia":"Pharmacy","Lazer":"Leisure","Viagens":"Travel","Assinaturas":"Subscriptions","Educação":"Education","Roupas":"Clothing","Beleza":"Beauty","Presentes":"Gifts",
 "Contas (luz, água, internet)":"Bills (power, water, internet)","Cartão de crédito":"Credit card","Impostos":"Taxes","Outros":"Other","Salário":"Salary","Vendas":"Sales","Aluguel recebido":"Rent received","Investimentos":"Investments","Dividendos":"Dividends","Reembolso":"Reimbursement","Presente":"Gift","Bônus":"Bonus","13º salário":"13th-month salary","Restituição de imposto":"Tax refund"
 };
+Object.assign(DICT,{
+"Contas":"Bills","Gráficos":"Charts","Economia":"Economy","Receitas e despesas":"Income and expenses","Últimos 6 meses":"Last 6 months","Sem despesas neste mês.":"No expenses this month.",
+"Conversor de moedas":"Currency converter","De":"From","Para":"To","Inverter moedas":"Swap currencies","Atualizar cotações":"Refresh rates","Variação em 30 dias (em reais)":"Last 30 days (in reais)",
+"Atualizando cotações...":"Updating rates...","Atualizado em":"Updated","Sem conexão. Usando a última cotação salva.":"Offline. Using the last saved rates.","Não foi possível carregar as cotações. Verifique a conexão.":"Couldn’t load rates. Check your connection.",
+"Cotação indisponível para esta moeda no momento.":"Rate not available for this currency right now.","Gráfico indisponível no momento.":"Chart unavailable right now.",
+"Cotações: AwesomeAPI. Valores de referência, podem diferir dos praticados por bancos e casas de câmbio.":"Rates: AwesomeAPI. Reference values; banks and exchange offices may charge different rates.",
+"Indicadores":"Indicators","Dados do Banco Central do Brasil":"Data from the Central Bank of Brazil","Atualizar indicadores":"Refresh indicators","Atualizando indicadores...":"Updating indicators...",
+"Fonte: Banco Central do Brasil (SGS).":"Source: Central Bank of Brazil (SGS).","Sem conexão. Mostrando os últimos dados salvos.":"Offline. Showing the last saved data.","Não foi possível carregar os indicadores. Verifique a conexão.":"Couldn’t load the indicators. Check your connection.",
+"Alguns indicadores não puderam ser carregados.":"Some indicators couldn’t be loaded.","Selic (meta)":"Selic (target rate)","IPCA no mês":"Monthly IPCA","IPCA em 12 meses":"12-month IPCA","Juro real":"Real interest rate","Poder de compra":"Purchasing power",
+"ao ano":"per year","ao mês":"per month","Selic descontada a inflação":"Selic minus inflation","R$ 100 de 12 meses atrás, corrigidos pelo IPCA":"R$ 100 from 12 months ago, adjusted by IPCA",
+"Inflação (IPCA) mês a mês":"Inflation (IPCA) month by month","Meta Selic no último ano":"Selic target over the last year","Simulador de juros compostos":"Compound interest simulator",
+"Valor inicial (R$)":"Initial amount (R$)","Aporte mensal (R$)":"Monthly contribution (R$)","Taxa de juros (%)":"Interest rate (%)","Período da taxa":"Rate period","Prazo":"Term","Unidade do prazo":"Term unit","anos":"years","meses":"months",
+"Usar a Selic atual como taxa":"Use the current Selic as the rate","Total investido":"Total invested","Juros ganhos":"Interest earned","Valor final":"Final amount","Valor final em poder de compra de hoje":"Final amount in today’s purchasing power",
+"O valor em poder de compra de hoje usa o IPCA de 12 meses como estimativa da inflação futura.":"Today’s purchasing power uses 12-month IPCA as an estimate of future inflation.",
+"Quanto rende?":"How much does it earn?",
+"Percentual da taxa (%)":"Share of the rate (%)","Percentual da taxa: 100 para 100% da Selic; 90 para 90% do CDI, por exemplo.":"Share of the rate: 100 for 100% of Selic; 90 for 90% of CDI, for example.","Imposto de renda":"Income tax",
+"Tabela regressiva (CDB, Tesouro)":"Regressive table (CDB, Treasury)","Isento (LCI, LCA, poupança)":"Exempt (LCI, LCA, savings)","Inflação esperada (% ao ano)":"Expected inflation (% per year)",
+"Reajustar o aporte todo ano pela inflação":"Raise the contribution every year by inflation","Cenário da taxa":"Rate scenario","Taxa constante":"Constant rate","Queda gradual":"Gradual drop","Queda forte":"Sharp drop","Personalizado":"Custom",
+"Queda total (pontos percentuais)":"Total drop (percentage points)","Em quantos anos":"Over how many years","Juros ganhos (brutos)":"Interest earned (gross)","Imposto de renda estimado":"Estimated income tax",
+"Valor final bruto":"Final amount (gross)","Valor final líquido":"Final amount (net)","Valor líquido em poder de compra de hoje":"Net amount in today’s purchasing power","Taxa ao ano no fim do prazo":"Annual rate at the end of the term",
+"Comparação de cenários da taxa":"Rate scenario comparison",
+"Hipóteses ilustrativas, não são previsões. O imposto de renda usa a tabela regressiva (22,5% a 15%) aplicada a cada aporte conforme o tempo de aplicação.":"Illustrative assumptions, not forecasts. Income tax uses the regressive table (22.5% to 15%), applied to each contribution according to how long it was invested.",
+"O valor em poder de compra de hoje desconta a inflação esperada informada acima.":"Today’s purchasing power discounts the expected inflation entered above.","Prazo (meses)":"Term (months)","CDI (% ao ano)":"CDI (% per year)","Selic (% ao ano)":"Selic (% per year)","Poupança":"Savings account",
+"CDB (100% do CDI, após IR)":"CDB (100% of CDI, after income tax)","LCI/LCA (90% do CDI, isento de IR)":"LCI/LCA (90% of CDI, tax-free)","Preencha o CDI e a Selic para comparar.":"Fill in the CDI and Selic rates to compare.",
+"As simulações são estimativas simples e não consideram TR, taxas de custódia ou mudanças futuras nas taxas. Não são recomendação de investimento.":"Simulations are simple estimates and don’t include TR, custody fees or future rate changes. They are not investment advice.",
+"isenta de IR":"tax-free","Entenda os termos":"Understand the terms","Juros compostos":"Compound interest",
+"Taxa básica de juros da economia, definida pelo Copom do Banco Central. Influencia financiamentos, empréstimos e o rendimento da renda fixa.":"The economy’s base interest rate, set by the Central Bank’s Copom. It influences loans, financing and fixed-income returns.",
+"Taxa que os bancos usam em empréstimos entre si, muito próxima da Selic. Serve de referência para CDBs, LCIs e LCAs.":"The rate banks use to lend to each other, very close to Selic. It’s the benchmark for CDBs, LCIs and LCAs.",
+"Índice oficial de inflação do Brasil, medido pelo IBGE. Mostra quanto os preços subiram no período.":"Brazil’s official inflation index, measured by IBGE. It shows how much prices rose in the period.",
+"Juro descontada a inflação. Mostra quanto o dinheiro rende de verdade em poder de compra.":"Interest after inflation. It shows how much your money really earns in purchasing power.",
+"Juros que incidem sobre o valor inicial mais os juros já acumulados: o famoso juros sobre juros.":"Interest charged on the initial amount plus the interest already accumulated: interest on interest."
+});
 var RXS=[
 [/^Dia selecionado: /,"Selected day: "],[/\bem (\d+) dias\b/g,"in $1 days"],[/\bhoje\b/g,"today"],[/\bamanhã\b/g,"tomorrow"],
 [/^Importado: (\d+) lançamentos e (\d+) contas agendadas adicionados\.$/,"Imported: $1 transactions and $2 scheduled bills added."],
@@ -594,6 +725,7 @@ var RXS=[
 [/^Enviamos um link de confirmação para (.+)\. O e-mail só muda depois que você clicar nele\.$/,"We sent a confirmation link to $1. Your e-mail only changes after you click it."],
 [/^Excluir (.+)$/,"Delete $1"]
 ];
+RXS.push([/^cai ([\d.,]+) p\.p\. em (\d+) anos$/,'drops $1 p.p. over $2 years'],[/^taxa final (.+)$/,'final rate $1'],[/^Ref\.: /,'As of: '],[/^rende /,'earns '],[/^IR (\d)/,'Tax $1']);
 var OT=new WeakMap(),ATTRS=['placeholder','aria-label','title'];
 function trOne(t){
   if(Object.prototype.hasOwnProperty.call(DICT,t))return DICT[t];
@@ -649,12 +781,232 @@ function setLang(l,boot){
   try{localStorage.setItem('gb-lang',l)}catch(e){}
   document.documentElement.lang=l==='en'?'en':'pt-BR';
   document.title=l==='en'?'Greenback – Personal finance':'Greenback – Controle financeiro';
-  if(!boot){var cv=$('cat').value;fillCats(cv);render();renderInv();renderCal()}
+  if(!boot){var cv=$('cat').value;fillCats(cv);render();renderInv();renderCal();if(window.GBloc)window.GBloc()}
   if(l==='en')walk(document.body);
   Array.prototype.forEach.call(document.querySelectorAll('.lg'),function(b){b.classList.toggle('on',b.getAttribute('data-l')===l)});
   attach();
 }
 Array.prototype.forEach.call(document.querySelectorAll('.lg'),function(b){b.onclick=function(){setLang(b.getAttribute('data-l'))}});
+(function(){
+var CODES=['BRL','USD','EUR','GBP','ARS','CAD','JPY','BTC'];
+function fN(n,d){return n.toLocaleString('pt-BR',{minimumFractionDigits:d,maximumFractionDigits:d})}
+function pc(n){return fN(n,2)+'%'}
+function sh(n){var a=Math.abs(n);return a>=1e6?fN(n/1e6,1)+'M':a>=1e3?fN(n/1e3,1)+'k':fN(n,a<10?2:a<100?1:0)}
+function ld(t){return '<p class="empty">'+t+'</p>'}
+function setT(i,t){var e=$(i);if(e)e.textContent=t}
+function last(a){return a&&a.length?a[a.length-1]:null}
+function lgd(S){return S.length>1?'<div class="lgd">'+S.map(function(x){return '<span><i style="background:'+x.c+'"></i>'+esc(x.n)+'</span>'}).join('')+'</div>':''}
+function axes(mn,mx,W,H,L,R,T,B){
+  var Y=function(v){return T+(mx-v)*(H-T-B)/(mx-mn)},h='';
+  [0,1,2,3].forEach(function(k){var v=mn+(mx-mn)*k/3,y=Y(v).toFixed(1);h+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+y+'" y2="'+y+'" stroke="var(--line)"/><text x="'+(L-4)+'" y="'+(+y+3)+'" text-anchor="end" font-size="9" fill="var(--mute)">'+sh(v)+'</text>'});
+  return {Y:Y,h:h};
+}
+function line(el,labels,S){
+  var W=320,H=170,L=46,R=8,T=10,B=22,a=[];S.forEach(function(s){a=a.concat(s.v)});
+  if(!a.length){el.innerHTML='';return}
+  var mn=Math.min.apply(null,a),mx=Math.max.apply(null,a);if(mn===mx){mn-=1;mx+=1}var p=(mx-mn)*.08;mn-=p;mx+=p;
+  var A=axes(mn,mx,W,H,L,R,T,B),n=labels.length,X=function(i){return L+(n>1?i*(W-L-R)/(n-1):(W-L-R)/2)},t='',ix=[0,Math.floor((n-1)/2),n-1].filter(function(v,i,r){return r.indexOf(v)===i});
+  ix.forEach(function(i){t+='<text x="'+X(i).toFixed(1)+'" y="'+(H-6)+'" text-anchor="'+(i===0?'start':i===n-1?'end':'middle')+'" font-size="9" fill="var(--mute)">'+esc(labels[i])+'</text>'});
+  var pl=S.map(function(s){return '<polyline fill="none" stroke="'+s.c+'" stroke-width="2" stroke-linejoin="round" points="'+s.v.map(function(v,i){return X(i).toFixed(1)+','+A.Y(v).toFixed(1)}).join(' ')+'"/>'}).join('');
+  el.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto" role="img">'+A.h+t+pl+'</svg>'+lgd(S);
+}
+function bars(el,labels,S){
+  var W=320,H=170,L=46,R=8,T=10,B=22,a=[0];S.forEach(function(s){a=a.concat(s.v)});
+  var mn=Math.min.apply(null,a),mx=Math.max.apply(null,a);if(mx===mn)mx=mn+1;
+  var A=axes(mn,mx,W,H,L,R,T,B),n=labels.length,gw=(W-L-R)/n,bw=Math.min(20,gw*.8/S.length),y0=A.Y(0),b='',t='';
+  labels.forEach(function(lb,i){
+    var cx=L+gw*i+gw/2;
+    S.forEach(function(s,j){var y=A.Y(s.v[i]),x=cx-bw*S.length/2+bw*j;b+='<rect x="'+x.toFixed(1)+'" y="'+Math.min(y,y0).toFixed(1)+'" width="'+(bw-1).toFixed(1)+'" height="'+Math.max(1,Math.abs(y0-y)).toFixed(1)+'" rx="2" fill="'+s.c+'"/>'});
+    t+='<text x="'+cx.toFixed(1)+'" y="'+(H-6)+'" text-anchor="middle" font-size="9" fill="var(--mute)">'+esc(lb)+'</text>';
+  });
+  el.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto" role="img">'+A.h+b+t+'</svg>'+lgd(S);
+}
+function donut(el,items){
+  var tot=items.reduce(function(a,b){return a+b.v},0);
+  if(!tot){el.innerHTML=ld('Sem despesas neste mês.');return}
+  var C=['#0b7a63','#c0392b','#d99a00','#2b6cb0','#8e44ad','#7f8c8d'],circ=2*Math.PI*48,off=0,arcs='',lg='';
+  items.forEach(function(it,i){
+    var len=it.v/tot*circ,c=C[i%C.length];
+    arcs+='<circle cx="60" cy="60" r="48" fill="none" stroke="'+c+'" stroke-width="20" stroke-dasharray="'+len.toFixed(2)+' '+(circ-len).toFixed(2)+'" stroke-dashoffset="'+(-off).toFixed(2)+'" transform="rotate(-90 60 60)"/>';
+    off+=len;
+    lg+='<div class="lr"><span><i style="background:'+c+'"></i>'+esc(it.l)+'</span><b>'+fN(it.v/tot*100,0)+'%</b></div>';
+  });
+  el.innerHTML='<div class="dn"><svg viewBox="0 0 120 120" role="img">'+arcs+'</svg><div>'+lg+'</div></div>';
+}
+function curName(c){if(c==='BTC')return 'BTC – Bitcoin';try{var n=new Intl.DisplayNames([window.LOC],{type:'currency'}).of(c);return n&&n!==c?c+' – '+n:c}catch(e){return c}}
+function fxLabels(){
+  ['fxf','fxt'].forEach(function(id,k){
+    var el=$(id),v=el.value||(k?'BRL':'USD');el.innerHTML='';
+    CODES.forEach(function(c){var o=document.createElement('option');o.value=c;o.textContent=curName(c);el.appendChild(o)});
+    el.value=v;
+  });
+}
+function renderCharts(){
+  if(!$('ch-bars'))return;
+  var lb=[],inc=[],exp=[];
+  for(var i=5;i>=0;i--){
+    var d=new Date(cur.getFullYear(),cur.getMonth()-i,1),k=ym(d),a=0,b=0;
+    tx.forEach(function(x){if(x.dt.slice(0,7)===k){if(x.t==='in')a+=x.v;else b+=x.v}});
+    lb.push(d.toLocaleDateString('pt-BR',{month:'short'}));inc.push(a);exp.push(b);
+  }
+  bars($('ch-bars'),lb,[{n:'Receitas',c:'var(--in)',v:inc},{n:'Despesas',c:'var(--out)',v:exp}]);
+  var by={};tx.forEach(function(x){if(x.t==='out'&&x.dt.slice(0,7)===ym(cur))by[x.c]=(by[x.c]||0)+x.v});
+  var arr=Object.keys(by).map(function(k){return {l:k,v:by[k]}}).sort(function(a,b){return b.v-a.v});
+  if(arr.length>6){var rest=arr.slice(5).reduce(function(a,b){return a+b.v},0);arr=arr.slice(0,5).concat([{l:'Outros',v:rest}])}
+  donut($('ch-donut'),arr);
+  fxLabels();calcFx();
+}
+/* ---- câmbio ---- */
+var FX={r:{BRL:1},ch:{},ts:0},FXH={};
+try{var c0=JSON.parse(localStorage.getItem('gb-fx')||'null');if(c0&&c0.r)FX=c0}catch(e){}
+function tsTxt(ts){return ts?new Date(ts).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):''}
+function calcFx(){
+  if(!$('fxa'))return;
+  var a=parseFloat($('fxa').value)||0,f=$('fxf').value,t=$('fxt').value,rf=FX.r[f],rt=FX.r[t];
+  if(!rf||!rt){setT('fxr','—');setT('fxrate','Cotação indisponível para esta moeda no momento.');return}
+  setT('fxr',fN(a*rf/rt,t==='BTC'?8:2)+' '+t);
+  setT('fxrate','1 '+f+' = '+fN(rf/rt,(f==='BTC'||t==='BTC')?8:4)+' '+t);
+}
+async function drawFxChart(){
+  var f=$('fxf').value,t=$('fxt').value,c=f!=='BRL'?f:t,el=$('fx-ch');
+  if(c==='BRL'){el.innerHTML='';return}
+  try{
+    if(!FXH[c]){var r=await fetch('https://economia.awesomeapi.com.br/json/daily/'+c+'-BRL/30');if(!r.ok)throw 0;FXH[c]=(await r.json()).reverse()}
+    var d=FXH[c];
+    line(el,d.map(function(o){return new Date(o.timestamp*1000).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})}),[{n:c+'/BRL',c:'var(--in)',v:d.map(function(o){return +o.bid})}]);
+  }catch(e){el.innerHTML=ld('Gráfico indisponível no momento.')}
+}
+function showFx(ok){
+  if(ok===false)setT('fxst',FX.ts?'Sem conexão. Usando a última cotação salva.':'Não foi possível carregar as cotações. Verifique a conexão.');
+  else setT('fxst','Atualizado em');
+  setT('fxts',FX.ts?tsTxt(FX.ts):'');
+  calcFx();drawFxChart();
+}
+async function loadFx(force){
+  if(!force&&FX.ts&&Date.now()-FX.ts<6e5){showFx();return}
+  setT('fxst','Atualizando cotações...');setT('fxts','');
+  var ok=false;
+  try{
+    var cs=CODES.slice(1),r=await fetch('https://economia.awesomeapi.com.br/json/last/'+cs.map(function(c){return c+'-BRL'}).join(','));
+    if(!r.ok)throw 0;
+    var j=await r.json(),rt={BRL:1},ch={};
+    cs.forEach(function(c){var o=j[c+'BRL'];if(o&&+o.bid>0){rt[c]=+o.bid;ch[c]=+o.pctChange}});
+    if(Object.keys(rt).length<2)throw 0;
+    FX={r:rt,ch:ch,ts:Date.now()};ok=true;
+  }catch(e){}
+  if(!ok){try{
+    var r2=await fetch('https://api.frankfurter.dev/v1/latest?base=BRL&symbols=USD,EUR,GBP,CAD,JPY');
+    if(!r2.ok)throw 0;
+    var j2=await r2.json(),rt2={BRL:1};
+    Object.keys(j2.rates).forEach(function(c){rt2[c]=1/j2.rates[c]});
+    FX={r:rt2,ch:{},ts:Date.now()};ok=true;
+  }catch(e){}}
+  if(ok){try{localStorage.setItem('gb-fx',JSON.stringify(FX))}catch(e){}}
+  showFx(ok);
+}
+['fxa','fxf','fxt'].forEach(function(id){$(id).addEventListener('input',function(){calcFx();if(id!=='fxa')drawFxChart()})});
+$('fxsw').onclick=function(){var a=$('fxf').value;$('fxf').value=$('fxt').value;$('fxt').value=a;calcFx();drawFxChart()};
+$('fxrf').onclick=function(){FXH={};loadFx(true)};
+/* ---- indicadores (Banco Central) ---- */
+var IND=null;try{IND=JSON.parse(localStorage.getItem('gb-ind')||'null')}catch(e){}
+async function sgs(c,n){
+  var r=await fetch('https://api.bcb.gov.br/dados/serie/bcdata.sgs.'+c+'/dados/ultimos/'+n+'?formato=json');
+  if(!r.ok)throw 0;
+  return (await r.json()).map(function(o){var p=o.data.split('/');return {d:new Date(+p[2],+p[1]-1,+p[0]).getTime(),v:parseFloat(o.valor)}});
+}
+function dt(o,m){return o?'Ref.: '+new Date(o.d).toLocaleDateString('pt-BR',m?{month:'short',year:'numeric'}:{day:'2-digit',month:'2-digit',year:'numeric'}):''}
+function card(l,v,s){return '<div><small>'+l+'</small><b>'+v+'</b><small>'+s+'</small></div>'}
+function showInd(state){
+  var I=IND||{},sel=last(I.selic),cdi=last(I.cdi),im=last(I.ipcam),i12=last(I.ipca12),h='';
+  h+=card('Selic (meta)',sel?pc(sel.v):'—','ao ano • '+dt(sel));
+  h+=card('CDI',cdi?pc(cdi.v):'—','ao ano • '+dt(cdi));
+  h+=card('IPCA no mês',im?pc(im.v):'—',dt(im,1));
+  h+=card('IPCA em 12 meses',i12?pc(i12.v):'—',dt(i12,1));
+  if(sel&&i12)h+=card('Juro real',pc(((1+sel.v/100)/(1+i12.v/100)-1)*100),'Selic descontada a inflação');
+  if(i12)h+=card('Poder de compra',brl(100*(1+i12.v/100)),'R$ 100 de 12 meses atrás, corrigidos pelo IPCA');
+  $('ind').innerHTML=h;
+  setT('indst',state===false?(IND?'Sem conexão. Mostrando os últimos dados salvos.':'Não foi possível carregar os indicadores. Verifique a conexão.'):state==='part'?'Alguns indicadores não puderam ser carregados.':'Fonte: Banco Central do Brasil (SGS).');
+  var ip=(I.ipcam||[]).slice(-12);
+  if(ip.length)bars($('ec-ipca'),ip.map(function(o){return new Date(o.d).toLocaleDateString('pt-BR',{month:'short'})}),[{n:'IPCA',c:'var(--in)',v:ip.map(function(o){return o.v})}]);
+  else $('ec-ipca').innerHTML=ld('Gráfico indisponível no momento.');
+  var sa=I.selic||[];
+  if(sa.length){
+    var st=Math.max(1,Math.floor(sa.length/12)),pts=sa.filter(function(o,i){return i%st===0||i===sa.length-1});
+    line($('ec-selic'),pts.map(function(o){return new Date(o.d).toLocaleDateString('pt-BR',{month:'short',year:'2-digit'})}),[{n:'Selic',c:'var(--in)',v:pts.map(function(o){return o.v})}]);
+  }else $('ec-selic').innerHTML=ld('Gráfico indisponível no momento.');
+  if(sel&&!touched){$('cmps').value=sel.v.toFixed(2);if(cdi)$('cmpc').value=cdi.v.toFixed(2)}
+  if(i12&&!touchedI&&!$('sinf').value)$('sinf').value=i12.v.toFixed(2);
+  calcSim();calcCmp();
+}
+async function loadInd(force){
+  if(!force&&IND&&IND.ts&&Date.now()-IND.ts<36e5){showInd(true);return}
+  setT('indst','Atualizando indicadores...');
+  var ks=[['selic',432,365],['cdi',4389,1],['ipcam',433,13],['ipca12',13522,1]];
+  var res=await Promise.all(ks.map(function(k){return sgs(k[1],k[2]).catch(function(){return null})})),o={ts:Date.now()},ok=0;
+  ks.forEach(function(k,i){if(res[i]&&res[i].length){o[k[0]]=res[i];ok++}});
+  if(ok){IND=Object.assign({},IND||{},o);try{localStorage.setItem('gb-ind',JSON.stringify(IND))}catch(e){}showInd(ok===ks.length?true:'part')}
+  else showInd(false);
+}
+$('indrf').onclick=function(){loadInd(true)};
+/* ---- simuladores ---- */
+var touched=false,touchedI=false;
+function rr(l,v,x,sub){return '<div class="rr'+(x?' big':'')+'"><span>'+l+(sub?'<small>'+sub+'</small>':'')+'</span><b>'+v+'</b></div>'}
+function irOne(c,fv,days){var g=fv-c;return g<=0?0:g*(days<=180?.225:days<=360?.2:days<=720?.175:.15)}
+function simRun(o){
+  var G=[1],bal=o.P,inv=o.P,cs=[],lb=[],vi=[],vt=[],step=Math.max(1,Math.ceil(o.n/48));
+  for(var m=1;m<=o.n;m++){
+    var ra=Math.max(0,o.ra-o.drop*Math.min(m/(o.yrs*12),1)),i=Math.pow(1+ra*o.pct/10000,1/12)-1,c=o.A*(o.grow?Math.pow(1+o.inf/100,Math.floor((m-1)/12)):1);
+    bal=bal*(1+i)+c;inv+=c;G[m]=G[m-1]*(1+i);cs.push(c);
+    if(m%step===0||m===o.n){lb.push(m+'m');vi.push(inv);vt.push(bal)}
+  }
+  var ir=0;
+  if(o.tax==='r'){
+    ir+=irOne(o.P,o.P*G[o.n],o.n*30);
+    for(var k=1;k<=o.n;k++)ir+=irOne(cs[k-1],cs[k-1]*G[o.n]/G[k],(o.n-k)*30);
+  }
+  return {bal:bal,inv:inv,ir:ir,net:bal-ir,lb:lb,vi:vi,vt:vt,rEnd:Math.max(0,o.ra-o.drop)*o.pct/100};
+}
+function nv(id,d){var v=$(id).value;return v===''?d:(+v||0)}
+function calcSim(){
+  var n=Math.round(nv('sn',0));if($('sp').value==='a')n*=12;n=Math.min(n,1200);
+  var sc=$('scn').value;$('sqw').hidden=sc==='c';
+  if(n<1){$('sres').innerHTML='';$('s-ch').innerHTML='';$('scmp').innerHTML='';$('snote').hidden=true;return}
+  var r=nv('sr',0),inf=nv('sinf',0);
+  var base={P:nv('sv',0),A:nv('sa',0),ra:$('su').value==='a'?r:(Math.pow(1+r/100,12)-1)*100,pct:nv('spc',100),n:n,inf:inf,grow:$('sgr').checked&&inf>0,tax:$('sir').value,drop:0,yrs:1};
+  function run(d,y){return simRun(Object.assign({},base,{drop:d,yrs:Math.max(.25,y)}))}
+  var main=sc==='c'?run(0,1):run(nv('sq',0),nv('sd',1));
+  var h=rr('Total investido',brl(main.inv))+rr('Juros ganhos (brutos)',brl(main.bal-main.inv));
+  if(base.tax==='r')h+=rr('Imposto de renda estimado','− '+brl(main.ir));
+  h+=rr('Valor final bruto',brl(main.bal))+rr('Valor final líquido',brl(main.net),1);
+  if(inf>0)h+=rr('Valor líquido em poder de compra de hoje',brl(main.net/Math.pow(1+inf/100,n/12)));
+  if(sc!=='c')h+=rr('Taxa ao ano no fim do prazo',pc(main.rEnd));
+  $('sres').innerHTML=h;$('snote').hidden=!(inf>0);
+  line($('s-ch'),main.lb,[{n:'Total investido',c:'var(--mute)',v:main.vi},{n:'Valor final bruto',c:'var(--in)',v:main.vt}]);
+  $('scmp').innerHTML=[['Taxa constante',0,1],['Queda gradual',3,3],['Queda forte',6,3]].map(function(x){
+    var o=run(x[1],x[2]),sub=(x[1]?'cai '+fN(x[1],1)+' p.p. em '+x[2]+' anos • ':'')+'taxa final '+pc(o.rEnd);
+    return rr(x[0],brl(o.net),0,sub);
+  }).join('');
+}
+function calcCmp(){
+  var V=+$('cmpv').value||0,n=Math.max(1,Math.round(+$('cmpn').value||0)),cdi=(+$('cmpc').value||0)/100,sel=(+$('cmps').value||0)/100;
+  if(!($('cmpc').value&&$('cmps').value)){$('cres').innerHTML=ld('Preencha o CDI e a Selic para comparar.');return}
+  var poup=V*(sel>0.085?Math.pow(1.005,n):Math.pow(1+0.7*sel,n/12)),gross=V*Math.pow(1+cdi,n/12),days=n*30,tax=days<=180?.225:days<=360?.2:days<=720?.175:.15,cdb=V+(gross-V)*(1-tax),lci=V*Math.pow(1+.9*cdi,n/12);
+  var L=[['Poupança',poup,'isenta de IR'],['CDB (100% do CDI, após IR)',cdb,'IR '+fN(tax*100,1)+'%'],['LCI/LCA (90% do CDI, isento de IR)',lci,'']].sort(function(a,b){return b[1]-a[1]});
+  $('cres').innerHTML=L.map(function(x,k){return rr(x[0],brl(x[1]),k===0,('rende '+brl(x[1]-V))+(x[2]?' • '+x[2]:''))}).join('');
+}
+['sq','sd'].forEach(function(id){$(id).addEventListener('input',function(){if($('scn').value!=='c')$('scn').value='p'})});
+['sv','sa','sr','su','spc','sir','sn','sp','sinf','sgr','sq','sd'].forEach(function(id){$(id).addEventListener('input',calcSim)});
+$('sgr').addEventListener('change',calcSim);
+$('sinf').addEventListener('input',function(){touchedI=true});
+$('scn').addEventListener('input',function(){var v=$('scn').value;if(v==='g'){$('sq').value=3;$('sd').value=3}else if(v==='f'){$('sq').value=6;$('sd').value=3}calcSim()});
+['cmpv','cmpn','cmpc','cmps'].forEach(function(id){$(id).addEventListener('input',function(){if(id==='cmpc'||id==='cmps')touched=true;calcCmp()})});
+$('ssel').onclick=function(){var s=last((IND||{}).selic);if(s){$('sr').value=s.v.toFixed(2);$('su').value='a';$('spc').value=100;calcSim()}else{loadInd(true)}};
+/* ---- integração ---- */
+var _r=window.render;window.render=function(){_r();renderCharts()};
+var _s=window.showTab;window.showTab=function(n){_s(n);if(n==='charts'){renderCharts();loadFx(false)}if(n==='econ')loadInd(false)};
+window.GBloc=function(){calcFx();if(FX.ts){showFx()}if(IND){showInd(true)}else{calcSim();calcCmp()}};
+if(IND){showInd(true)}else{calcSim();calcCmp()}
+})();
 setLang(window.LANG,true);
 function b64(buf){return btoa(String.fromCharCode.apply(null,new Uint8Array(buf)))}
 function unb64(t){var b=atob(t),a=new Uint8Array(b.length);for(var i=0;i<b.length;i++)a[i]=b.charCodeAt(i);return a}
