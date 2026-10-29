@@ -22,6 +22,7 @@
   document.documentElement.lang=window.LANG==="en"?"en":"pt-BR";
   var _d=Date.prototype.toLocaleDateString;Date.prototype.toLocaleDateString=function(l,x){return _d.call(this,l==="pt-BR"?window.LOC:l,x)};
   var _n=Number.prototype.toLocaleString;Number.prototype.toLocaleString=function(l,x){return _n.call(this,l==="pt-BR"?window.LOC:l,x)};
+  try{var ua=navigator.userAgent||"";if(/iPad|iPhone|iPod/.test(ua)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1))document.documentElement.classList.add("ios")}catch(e){}
   var o=Storage.prototype.setItem;
   Storage.prototype.setItem=function(k,v){
     o.call(this,k,v);
@@ -102,7 +103,7 @@ li button{border:0;background:none;color:var(--mute);font-size:1.2rem;cursor:poi
 .pay.ok{background:var(--in);border-color:var(--in);color:#fff}
 [id]{scroll-margin-top:140px}
 @media(prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
-header{position:sticky;top:0;z-index:20;margin:0 -16px;padding:12px 16px;gap:10px 14px;justify-content:flex-start;background:var(--bg);background:color-mix(in srgb,var(--bg) 82%,transparent);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+header{position:sticky;top:0;z-index:20;margin:0 -16px;padding:12px 16px;gap:10px 14px;justify-content:flex-start;background:var(--bg);border-bottom:1px solid var(--line)}
 .brand{order:1;display:flex;align-items:center;gap:10px;margin-right:auto}
 .logo{width:38px;height:38px;flex:none;display:block}
 .theme{order:2;display:flex;padding:3px;background:var(--card);border:1px solid var(--line);border-radius:999px}
@@ -169,7 +170,7 @@ main{max-width:640px;padding-bottom:110px}
 .month{order:3;flex:1 1 100%;justify-content:space-between;border-radius:14px}
 .month span{flex:1;text-transform:none}
 .month span::first-letter{text-transform:uppercase}
-.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:30;display:flex;justify-content:center;gap:4px;background:var(--card);background:color-mix(in srgb,var(--card) 90%,transparent);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-top:1px solid var(--line);padding:6px 10px calc(6px + env(safe-area-inset-bottom,0px))}
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:30;display:flex;justify-content:center;gap:4px;background:var(--card);border-top:1px solid var(--line);padding:6px 10px calc(6px + env(safe-area-inset-bottom,0px))}
 .tb{flex:1;max-width:200px;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 4px;border:0;background:none;color:var(--mute);font:inherit;font-size:.72rem;font-weight:600;cursor:pointer;border-radius:12px;transition:color .2s}
 .tb svg{width:24px;height:24px}
 .tb.on{color:var(--in)}
@@ -213,6 +214,64 @@ input[type=date]::-webkit-date-and-time-value{text-align:left;min-height:1.2em;m
 .card dt{font-weight:600;margin-top:10px}
 .card dd{margin:2px 0 0;color:var(--mute);font-size:.92rem}
 .sub{font-size:.8rem;text-transform:uppercase;letter-spacing:.06em;color:var(--mute);margin:18px 0 6px;font-weight:600}
+@keyframes fadein{from{opacity:0}}
+@keyframes fadeout{to{opacity:0}}
+@keyframes slidein{from{transform:translateX(100%)}}
+@keyframes slideout{to{transform:translateX(100%)}}
+@keyframes avin{from{opacity:0;transform:translateX(28px)}}
+@keyframes avback{from{opacity:0;transform:translateX(-28px)}}
+@keyframes rise{from{opacity:0;transform:translateY(22px) scale(.97)}}
+@keyframes tin{from{opacity:0;transform:translateY(12px)}}
+.tb{position:relative;z-index:1}
+.tbi{position:absolute;left:0;border-radius:14px;background:var(--bg);background:color-mix(in srgb,var(--in) 14%,transparent);pointer-events:none;transition:transform .4s cubic-bezier(.22,1,.36,1),width .4s cubic-bezier(.22,1,.36,1)}
+.swt{text-align:center;margin:12px 0 0;font-size:.92rem;color:var(--mute)}
+.lnk.b{font-weight:700;color:var(--in);text-decoration:none;padding:0 2px}
+@media (prefers-reduced-motion:no-preference){
+  #acctov:not([hidden]){animation:fadein .25s ease both}
+  #acctov:not([hidden]) .sheet{animation:slidein .38s cubic-bezier(.22,1,.36,1) both}
+  #acctov.out{animation:fadeout .22s ease both}
+  #acctov.out .sheet{animation:slideout .24s cubic-bezier(.4,0,1,1) both}
+  .pg:not([hidden]),.av:not([hidden]){animation:avin .34s cubic-bezier(.22,1,.36,1) both}
+  .sheet.back .pg:not([hidden]),.auth.back .av:not([hidden]){animation-name:avback}
+  html.needauth #authov{animation:fadein .35s ease both}
+  html.needauth .auth{animation:rise .45s cubic-bezier(.22,1,.36,1) both}
+  html.authout #authov{animation:fadeout .26s ease both}
+  html.locked #lockov{animation:fadein .3s ease both}
+  [data-tab]{animation:tin .36s cubic-bezier(.22,1,.36,1) both}
+  .add:active,.pay:active,.mi:active,.lg:active,.avatar:active{transform:scale(.97)}
+  .tb:active{transform:scale(.93)}
+  .tb svg{transition:transform .3s cubic-bezier(.34,1.56,.64,1)}
+  .tb.on svg{transform:translateY(-2px) scale(1.12)}
+}
+body,.card,header,.tabbar,.sheet,.menu,.theme,.mi{transition:background-color .3s,border-color .3s,color .3s}
+.add,.pay,.mi,.lg,.avatar,.tb,.lnk{transition:transform .15s ease,background-color .25s,color .25s,border-color .25s,opacity .2s}
+input,select{transition:border-color .2s,box-shadow .2s,background-color .3s,color .3s}
+.card.first[data-tab="charts"],.card.first[data-tab="econ"]{margin-top:26px}
+.card.first[data-tab="bills"]{margin-top:12px}
+#acctov{will-change:opacity}
+.sheet{will-change:transform;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;backface-visibility:hidden}
+@keyframes slidein{from{transform:translate3d(100%,0,0)}to{transform:translate3d(0,0,0)}}
+@keyframes slideout{from{transform:translate3d(0,0,0)}to{transform:translate3d(100%,0,0)}}
+@keyframes avin{from{opacity:0;transform:translate3d(18px,0,0)}}
+@keyframes avback{from{opacity:0;transform:translate3d(-18px,0,0)}}
+@media (prefers-reduced-motion:no-preference){
+  #acctov:not([hidden]){animation:fadein .22s ease-out both}
+  #acctov:not([hidden]) .sheet{animation:slidein .32s cubic-bezier(.32,.72,0,1) both}
+  #acctov.out{animation:fadeout .2s ease-in both}
+  #acctov.out .sheet{animation:slideout .22s cubic-bezier(.4,0,1,1) both}
+  .pg:not([hidden]),.av:not([hidden]){animation:avin .26s cubic-bezier(.32,.72,0,1) both}
+  .sheet.back .pg:not([hidden]),.auth.back .av:not([hidden]){animation-name:avback}
+  .sheet.opening .pg{animation:none!important}
+}
+html.ios{--gl-bd:rgba(255,255,255,.65);--gl-hi:rgba(255,255,255,.9);--gl-pill:rgba(255,255,255,.7);--gl-sh:rgba(20,40,45,.16);--gl-sheen:rgba(255,255,255,.28)}
+@media (prefers-color-scheme:dark){html.ios:not([data-theme="light"]){--gl-bd:rgba(255,255,255,.18);--gl-hi:rgba(255,255,255,.24);--gl-pill:rgba(255,255,255,.16);--gl-sh:rgba(0,0,0,.45);--gl-sheen:rgba(255,255,255,.07)}}
+html.ios[data-theme="dark"]{--gl-bd:rgba(255,255,255,.18);--gl-hi:rgba(255,255,255,.24);--gl-pill:rgba(255,255,255,.16);--gl-sh:rgba(0,0,0,.45);--gl-sheen:rgba(255,255,255,.07)}
+html.ios .tabbar{left:12px;right:12px;bottom:calc(8px + env(safe-area-inset-bottom,0px));max-width:560px;margin:0 auto;padding:6px;gap:2px;border:1px solid var(--gl-bd);border-radius:34px;background:color-mix(in srgb,var(--card) 42%,transparent);-webkit-backdrop-filter:blur(22px) saturate(190%);backdrop-filter:blur(22px) saturate(190%);box-shadow:0 10px 34px var(--gl-sh),inset 0 1px 1px var(--gl-hi),inset 0 -1px 1px color-mix(in srgb,var(--gl-hi) 30%,transparent)}
+html.ios .tabbar::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:linear-gradient(180deg,var(--gl-sheen),rgba(255,255,255,0) 50%)}
+html.ios .tbi{border-radius:28px;background:var(--gl-pill);box-shadow:0 2px 10px var(--gl-sh),inset 0 1px 1px var(--gl-hi);transition:transform .55s cubic-bezier(.34,1.35,.64,1),width .55s cubic-bezier(.34,1.35,.64,1)}
+html.ios .tb{border-radius:28px}
+html.ios #toast{bottom:calc(96px + env(safe-area-inset-bottom,0px))}
+html.ios.sheet-open .tabbar{-webkit-backdrop-filter:none;backdrop-filter:none}
 </style>
 </head>
 <body>
@@ -227,17 +286,30 @@ input[type=date]::-webkit-date-and-time-value{text-align:left;min-height:1.2em;m
   </div>
 </div>
 <div id="authov" role="dialog" aria-modal="true" aria-label="Entrar">
-  <div class="auth">
+  <div class="auth" id="authcard">
     <img src="icon.svg" width="56" height="56" alt="">
-    <h2>Entrar no Greenback</h2>
-    <p class="empty" style="margin:0 0 14px">Entre com sua conta para ver seus dados em qualquer celular.</p>
-    <input id="aemail" type="email" autocomplete="email" placeholder="E-mail" aria-label="E-mail">
-    <input id="apass" type="password" autocomplete="current-password" placeholder="Senha (mínimo 6 caracteres)" aria-label="Senha">
-    <button type="button" class="add" id="ain">Entrar</button>
-    <button type="button" class="add alt" id="aup">Criar conta</button>
-    <button type="button" class="add alt" id="agoogle">Continuar com Google</button>
-    <button type="button" class="lnk" id="areset">Esqueci minha senha</button>
-    <p class="empty" id="amsg" role="status" style="margin:8px 0 0"></p>
+    <div class="av" id="av-in">
+      <h2>Entrar no Greenback</h2>
+      <p class="empty" style="margin:0 0 14px">Entre com sua conta para ver seus dados em qualquer celular.</p>
+      <input id="aemail" type="email" autocomplete="email" placeholder="E-mail" aria-label="E-mail">
+      <input id="apass" type="password" autocomplete="current-password" placeholder="Senha" aria-label="Senha">
+      <button type="button" class="add" id="ain">Entrar</button>
+      <button type="button" class="add alt" id="agoogle">Continuar com Google</button>
+      <button type="button" class="lnk" id="areset">Esqueci minha senha</button>
+      <p class="swt">Não tem uma conta? <button type="button" class="lnk b" id="goup">Criar conta</button></p>
+      <p class="empty" id="amsg" role="status" style="margin:8px 0 0"></p>
+    </div>
+    <div class="av" id="av-up" hidden>
+      <button type="button" class="lnk" id="goin" style="padding-left:0">‹ Voltar</button>
+      <h2>Criar conta</h2>
+      <p class="empty" style="margin:0 0 14px">Informe seu e-mail e crie uma senha para começar.</p>
+      <input id="uemail" type="email" autocomplete="email" placeholder="E-mail de cadastro" aria-label="E-mail de cadastro">
+      <input id="upass" type="password" autocomplete="new-password" placeholder="Criar senha (mínimo 6 caracteres)" aria-label="Criar senha">
+      <input id="upass2" type="password" autocomplete="new-password" placeholder="Repetir senha" aria-label="Repetir senha">
+      <button type="button" class="add" id="ucreate">Criar conta</button>
+      <p class="swt">Já tem uma conta? <button type="button" class="lnk b" id="goin2">Entrar</button></p>
+      <p class="empty" id="umsg" role="status" style="margin:8px 0 0"></p>
+    </div>
   </div>
 </div>
 <div id="acctov" hidden>
@@ -613,15 +685,36 @@ setTheme(th,true);
 window.GBuser=function(name){var n=name||'Visitante',ini=(n.trim().charAt(0)||'?').toUpperCase();['avl','avl2'].forEach(function(i){$(i).textContent=ini});$('avn').textContent=n;$('pname').textContent=n};
 GBuser(window.GB_ON?'Visitante':'Meu perfil');
 if(!window.GB_ON)$('cloudoff').hidden=false;
-function openAcct(){go('main');$('acctov').hidden=false;document.body.style.overflow='hidden';$('acx').focus()}
-function closeAcct(){$('acctov').hidden=true;document.body.style.overflow='';$('avbtn').focus()}
+function openAcct(){go('main');$('acctov').querySelector('.sheet').classList.remove('back');$('acctov').classList.remove('out');$('acctov').hidden=false;document.documentElement.classList.add('sheet-open');var sh=$('acctov').querySelector('.sheet');sh.classList.add('opening');setTimeout(function(){sh.classList.remove('opening')},450)}
+function closeAcct(){
+  var o=$('acctov');if(o.hidden||o.classList.contains('out'))return;
+  var done=function(){o.hidden=true;o.classList.remove('out');document.documentElement.classList.remove('sheet-open');try{$('avbtn').focus()}catch(e){}};
+  if(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches){done();return}
+  o.classList.add('out');setTimeout(done,230);
+}
 $('avbtn').onclick=openAcct;$('acx').onclick=closeAcct;
 $('acctov').onclick=function(e){if(e.target===this)closeAcct()};
 document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!$('acctov').hidden)closeAcct()});
 var TT={main:'Configurações',conta:'Conta',seg:'Segurança',apar:'Aparência',bkp:'Backup',lang:'Idioma'};
-function go(n){['main','conta','seg','apar','bkp','lang'].forEach(function(k){$('pg-'+k).hidden=k!==n});$('sttl').textContent=TT[n];$('acb').hidden=n==='main';$('pmsg').textContent='';$('bk').textContent='';$('acctov').querySelector('.sheet').scrollTop=0;if(n==='seg')bioUi()}
+function go(n){['main','conta','seg','apar','bkp','lang'].forEach(function(k){$('pg-'+k).hidden=k!==n});$('sttl').textContent=TT[n];$('acb').hidden=n==='main';$('pmsg').textContent='';$('bk').textContent='';$('acctov').querySelector('.sheet').scrollTop=0;$('acctov').querySelector('.sheet').classList.toggle('back',n==='main');if(n==='seg')bioUi()}
 Array.prototype.forEach.call(document.querySelectorAll('.mi'),function(b){b.onclick=function(){go(b.getAttribute('data-go'))}});
 $('acb').onclick=function(){go('main')};
+function authView(v){
+  var up=v==='up',fi=$(up?'aemail':'uemail'),ti=$(up?'uemail':'aemail');
+  if(fi.value&&!ti.value)ti.value=fi.value;
+  $('authcard').classList.toggle('back',!up);
+  $('av-in').hidden=up;$('av-up').hidden=!up;
+  $('amsg').textContent='';$('umsg').textContent='';
+}
+$('goup').onclick=function(){authView('up')};
+$('goin').onclick=$('goin2').onclick=function(){authView('in')};
+window.GBleave=function(){
+  var h=document.documentElement;
+  if(!h.classList.contains('needauth'))return;
+  if(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches){h.classList.remove('needauth');return}
+  h.classList.add('authout');
+  setTimeout(function(){h.classList.remove('needauth','authout')},260);
+};
 (function(){
   function tag(el,t){if(el)el.setAttribute('data-tab',t)}
   tag(document.querySelector('.hero'),'home');
@@ -637,10 +730,24 @@ function showTab(n){
   each.call(document.querySelectorAll('.grid'),function(g){g.hidden=!Array.prototype.some.call(g.children,function(c){return !c.hidden})});
   each.call(document.querySelectorAll('.tb'),function(b){var on=b.getAttribute('data-t')===n;b.classList.toggle('on',on);b.setAttribute('aria-selected',on?'true':'false')});
   document.querySelector('.month').hidden=(n!=='home'&&n!=='charts');
-  window.scrollTo(0,0);
+  var first=null;
+  each.call(document.querySelectorAll('[data-tab]'),function(e){e.classList.remove('first');if(!first&&!e.hidden)first=e});
+  if(first)first.classList.add('first');
+  window.scrollTo(0,0);moveInd();
 }
 Array.prototype.forEach.call(document.querySelectorAll('.tb'),function(b){b.onclick=function(){showTab(b.getAttribute('data-t'))}});
-showTab('home');
+var tbi=document.createElement('span');tbi.className='tbi';
+var tbar=document.querySelector('.tabbar');tbar.insertBefore(tbi,tbar.firstChild);
+function moveInd(first){
+  var on=document.querySelector('.tb.on');if(!on)return;
+  if(first)tbi.style.transition='none';
+  tbi.style.width=on.offsetWidth+'px';tbi.style.height=on.offsetHeight+'px';tbi.style.top=on.offsetTop+'px';
+  tbi.style.transform='translateX('+on.offsetLeft+'px)';
+  if(first){void tbi.offsetWidth;tbi.style.transition=''}
+}
+window.addEventListener('resize',function(){moveInd(true)});
+window.addEventListener('load',function(){moveInd(true)});
+showTab('home');requestAnimationFrame(function(){moveInd(true)});
 var tt;function toast(t){var e=$('toast');e.textContent=t;e.classList.add('show');clearTimeout(tt);tt=setTimeout(function(){e.classList.remove('show')},1800)}
 $('f').addEventListener('submit',function(){toast('Lançamento adicionado')});
 $('bf').addEventListener('submit',function(){if(sd)toast('Conta agendada')});
@@ -701,6 +808,8 @@ Object.assign(DICT,{
 "Usar a Selic atual como taxa":"Use the current Selic as the rate","Total investido":"Total invested","Juros ganhos":"Interest earned","Valor final":"Final amount","Valor final em poder de compra de hoje":"Final amount in today’s purchasing power",
 "O valor em poder de compra de hoje usa o IPCA de 12 meses como estimativa da inflação futura.":"Today’s purchasing power uses 12-month IPCA as an estimate of future inflation.",
 "Quanto rende?":"How much does it earn?",
+"Não tem uma conta?":"Don’t have an account?","Já tem uma conta?":"Already have an account?","Informe seu e-mail e crie uma senha para começar.":"Enter your e-mail and create a password to get started.",
+"E-mail de cadastro":"Sign-up e-mail","Criar senha (mínimo 6 caracteres)":"Create password (minimum 6 characters)","Criar senha":"Create password","Repetir senha":"Repeat password","As senhas não são iguais.":"The passwords don’t match.",
 "Percentual da taxa (%)":"Share of the rate (%)","Percentual da taxa: 100 para 100% da Selic; 90 para 90% do CDI, por exemplo.":"Share of the rate: 100 for 100% of Selic; 90 for 90% of CDI, for example.","Imposto de renda":"Income tax",
 "Tabela regressiva (CDB, Tesouro)":"Regressive table (CDB, Treasury)","Isento (LCI, LCA, poupança)":"Exempt (LCI, LCA, savings)","Inflação esperada (% ao ano)":"Expected inflation (% per year)",
 "Reajustar o aporte todo ano pela inflação":"Raise the contribution every year by inflation","Cenário da taxa":"Rate scenario","Taxa constante":"Constant rate","Queda gradual":"Gradual drop","Queda forte":"Sharp drop","Personalizado":"Custom",
@@ -1138,7 +1247,7 @@ if("serviceWorker" in navigator){window.addEventListener("load",function(){navig
       localStorage.setItem("gb-uid",u.uid);
       refresh();
     }
-    html.classList.remove("needauth");
+    window.GBleave();
     q("acctbox").hidden=false;html.classList.add("loggedin");
     q("acct").textContent=u.email||"Google";
     GBuser(u.displayName||(u.email||"Conta").split("@")[0]);
@@ -1172,7 +1281,15 @@ if("serviceWorker" in navigator){window.addEventListener("load",function(){navig
     return [e,p];
   }
   q("ain").onclick=async function(){var c=creds();if(!c)return;msg("Entrando...");try{await A.signInWithEmailAndPassword(auth,c[0],c[1]);msg("")}catch(e){msg(why(e))}};
-  q("aup").onclick=async function(){var c=creds();if(!c)return;msg("Criando conta...");try{await A.createUserWithEmailAndPassword(auth,c[0],c[1]);msg("")}catch(e){msg(why(e))}};
+  function um(t){q("umsg").textContent=t}
+  q("ucreate").onclick=async function(){
+    var e=q("uemail").value.trim(),p=q("upass").value,p2=q("upass2").value;
+    if(!e||!p){um("Preencha e-mail e senha.");return}
+    if(p!==p2){um("As senhas não são iguais.");return}
+    um("Criando conta...");
+    try{await A.createUserWithEmailAndPassword(auth,e,p);um("")}catch(x){um(why(x))}
+  };
+  q("upass2").onkeydown=function(e){if(e.key==="Enter")q("ucreate").click()};
   q("agoogle").onclick=async function(){msg("");try{await A.signInWithPopup(auth,new A.GoogleAuthProvider())}catch(e){msg(why(e))}};
   q("areset").onclick=async function(){
     var e=q("aemail").value.trim();
@@ -1185,7 +1302,7 @@ if("serviceWorker" in navigator){window.addEventListener("load",function(){navig
     try{await A.signOut(auth)}catch(e){}
     localStorage.removeItem("gb-uid");
     blank();refresh();
-    q("aemail").value="";q("apass").value="";
+    q("aemail").value="";q("apass").value="";q("uemail").value="";q("upass").value="";q("upass2").value="";
   };
   function pm(t){q("pmsg").textContent=t}
   async function reauth(pw){
