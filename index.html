@@ -1059,8 +1059,11 @@ $('fxsw').onclick=function(){var a=$('fxf').value;$('fxf').value=$('fxt').value;
 $('fxrf').onclick=function(){FXH={};loadFx(true)};
 /* ---- indicadores (Banco Central) ---- */
 var IND=null;try{IND=JSON.parse(localStorage.getItem('gb-ind')||'null')}catch(e){}
+function dmy(d){return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0')+'/'+d.getFullYear()}
 async function sgs(c,n){
-  var r=await fetch('https://api.bcb.gov.br/dados/serie/bcdata.sgs.'+c+'/dados/ultimos/'+n+'?formato=json');
+  var base='https://api.bcb.gov.br/dados/serie/bcdata.sgs.'+c+'/dados',
+      u=Array.isArray(n)?base+'?formato=json&dataInicial='+n[0]+'&dataFinal='+n[1]:base+'/ultimos/'+Math.min(n,20)+'?formato=json';
+  var r=await fetch(u);
   if(!r.ok)throw 0;
   return (await r.json()).map(function(o){var p=o.data.split('/');return {d:new Date(+p[2],+p[1]-1,+p[0]).getTime(),v:parseFloat(o.valor)}});
 }
@@ -1089,9 +1092,9 @@ function showInd(state){
   calcSim();calcCmp();
 }
 async function loadInd(force){
-  if(!force&&IND&&IND.ts&&Date.now()-IND.ts<36e5){showInd(true);return}
+  if(!force&&IND&&IND.ts&&IND.selic&&IND.cdi&&IND.ipcam&&IND.ipca12&&Date.now()-IND.ts<36e5){showInd(true);return}
   setT('indst','Atualizando indicadores...');
-  var ks=[['selic',432,365],['cdi',4389,1],['ipcam',433,13],['ipca12',13522,1]];
+  var t0=new Date(),f0=new Date(t0.getFullYear()-1,t0.getMonth(),t0.getDate()),ks=[['selic',432,[dmy(f0),dmy(t0)]],['cdi',4389,1],['ipcam',433,13],['ipca12',13522,1]];
   var res=await Promise.all(ks.map(function(k){return sgs(k[1],k[2]).catch(function(){return null})})),o={ts:Date.now()},ok=0;
   ks.forEach(function(k,i){if(res[i]&&res[i].length){o[k[0]]=res[i];ok++}});
   if(ok){IND=Object.assign({},IND||{},o);try{localStorage.setItem('gb-ind',JSON.stringify(IND))}catch(e){}showInd(ok===ks.length?true:'part')}
